@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 1rem;
+        background: #f9f9f9;
+      }
+
+      .event {
+        background: white;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📡 Eventos en tiempo real</h1>
+    <div id="events"></div>
+
+    <script>
+      const socket = io('http://localhost:3000');
+
+      socket.on('connect', () => {
+        console.log('🟢 Conectado');
+      });
+
+      const renderEvent = (type, data) => {
+        const container = document.getElementById('events');
+        const div = document.createElement('div');
+        div.className = 'event';
+        div.innerHTML = `
+        <strong>Evento:</strong> ${type}<br>
+        <strong>Nombre:</strong> ${data.name}<br>
+        <strong>ID:</strong> ${data.id}<br>
+        <small>${new Date().toLocaleTimeString()}</small>
+      `;
+        container.prepend(div); // lo pone arriba
+      };
+
+      socket.on('shop.created', (data) => {
+        renderEvent('shop.created', data);
+      });
+
+      socket.on('category.created', (data) => {
+        renderEvent('category.created', data);
+      });
+      socket.on('category.updated', (data) => {
+        renderEvent('category.updated', data);
+      });
+      socket.on('category.deleted', (data) => {
+        renderEvent('category.deleted', data);
+      });
+    </script>
+  </body>
+</html>
