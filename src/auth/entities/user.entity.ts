@@ -8,6 +8,7 @@ import {
 import { Shop } from '../../shop/entities/shop.entity';
 import { UserRole } from 'src/enums';
 import { ShopCategories } from 'src/shop/category/entities/category.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {
@@ -19,7 +20,8 @@ export class User {
 
   @Column()
   name: string;
-
+  
+  @Exclude()
   @Column()
   password: string;
 

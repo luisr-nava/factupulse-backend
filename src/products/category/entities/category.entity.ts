@@ -4,10 +4,16 @@ import { Shop } from 'src/shop/entities/shop.entity';
 import {
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+export class ShopSummaryDto {
+  id: string;
+  name: string;
+}
 
 @Entity()
 export class ProductCategory {
@@ -17,10 +23,9 @@ export class ProductCategory {
   @Column()
   name: string;
 
-  @ManyToOne(() => Shop, (user) => user.productCategories, {
-    onDelete: 'CASCADE',
-  })
-  shop: Shop;
+  @ManyToMany(() => Shop, (shop) => shop.productCategories, { eager: true })
+  @JoinTable()
+  shops: ShopSummaryDto[];
 
   @ManyToOne(() => User, { nullable: false, eager: true })
   createdBy: User;
@@ -34,4 +39,8 @@ export class ProductCategory {
     updatedAt: string;
     changes: Record<string, { before: any; after: any }>;
   }[];
+  
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 }

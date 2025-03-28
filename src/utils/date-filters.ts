@@ -12,7 +12,7 @@ export function buildDateRangeFilter(
   if (dateFrom && dateTo) {
     const from = new Date(dateFrom);
     const to = new Date(dateTo);
-    to.setDate(to.getDate() + 1);
+    to.setDate(to.getDate() + 3);
     return Between(from, to);
   }
 
@@ -23,7 +23,7 @@ export function buildDateRangeFilter(
 
   if (dateTo) {
     const to = new Date(dateTo);
-    to.setDate(to.getDate() + 1);
+    to.setDate(to.getDate() + 3);
     return LessThanOrEqual(to);
   }
 

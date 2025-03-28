@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class FilterDto {
   @IsOptional()
@@ -9,8 +9,12 @@ export class FilterDto {
   @IsOptional()
   @Type(() => Date)
   dateFrom?: number;
- 
+
   @IsOptional()
   @Type(() => Date)
   dateTo?: number;
+
+  @IsOptional()
+  @IsUUID()
+  shopId?: string;
 }

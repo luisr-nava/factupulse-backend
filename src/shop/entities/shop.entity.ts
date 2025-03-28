@@ -43,9 +43,7 @@ export class Shop {
   @OneToMany(() => ProductShop, (ps) => ps.shop)
   productShops: ProductShop[];
 
-  @OneToMany(() => ProductCategory, (category) => category.shop, {
-    cascade: true,
-  })
+  @ManyToMany(() => ProductCategory, (category) => category.shops)
   productCategories: ProductCategory[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
