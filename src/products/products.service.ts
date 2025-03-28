@@ -15,6 +15,8 @@ import { ProductCategory } from './category/entities/category.entity';
 import { Shop } from 'src/shop/entities/shop.entity';
 import { Product } from './entities/product.entity';
 import { buildDateRangeFilter } from 'src/utils/date-filters';
+import { SocketGateway } from 'src/socket/socket.gateway';
+import { SocketEvent } from 'src/enums';
 
 @Injectable()
 export class ProductsService {
@@ -30,6 +32,8 @@ export class ProductsService {
 
     @InjectRepository(Shop)
     private readonly shopRepository: Repository<Shop>,
+
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
@@ -172,7 +176,10 @@ export class ProductsService {
       }
     }
 
-    await this.productShopRepository.save(productShopEntities);
+    const createProduct =
+      await this.productShopRepository.save(productShopEntities);
+
+    this.socketGateway.emit(SocketEvent.PRODUCT_CREATED, createProduct);
 
     return {
       mesage: 'Producto creado exitosamente',
@@ -414,7 +421,9 @@ export class ProductsService {
                 changes,
               },
             ];
-            await this.productShopRepository.save(ps);
+            const updateProduct = await this.productShopRepository.save(ps);
+
+            this.socketGateway.emit(SocketEvent.PRODUCT_UPDATED, updateProduct);
           }
         }
       }
@@ -464,11 +473,14 @@ export class ProductsService {
     }
     for (const ps of productShops) {
       if (force) {
-        await this.productShopRepository.remove(ps);
+        const deleteProduct = await this.productShopRepository.remove(ps);
+
+        this.socketGateway.emit(SocketEvent.PRODUCT_DELETED, deleteProduct);
       } else {
         ps.isAvailable = false;
         ps.availabilityReason = 'deleted';
-        await this.productShopRepository.save(ps);
+        const deleteProduct = await this.productShopRepository.save(ps);
+        this.socketGateway.emit(SocketEvent.PRODUCT_DELETED, deleteProduct);
       }
     }
     return {

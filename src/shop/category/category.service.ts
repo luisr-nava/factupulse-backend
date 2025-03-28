@@ -13,6 +13,7 @@ import { SocketGateway } from 'src/socket/socket.gateway';
 import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { FilterDto } from 'src/common/dtos/filters.dto';
 import { buildDateRangeFilter } from 'src/utils/date-filters';
+import { SocketEvent } from '../../enums/socket-event.enum';
 
 @Injectable()
 export class CategoryService {
@@ -38,7 +39,7 @@ export class CategoryService {
     });
     const createCategory = await this.shopCategoryRepository.save(category);
 
-    this.socketGateway.emitCategoryCreated(createCategory);
+    this.socketGateway.emit(SocketEvent.CATEGORY_CREATED, createCategory);
 
     return createCategory;
   }
@@ -136,7 +137,7 @@ export class CategoryService {
 
     const updatedCategory = await this.shopCategoryRepository.save(category);
 
-    this.socketGateway.emitCategoryUpdated(updatedCategory);
+    this.socketGateway.emit(SocketEvent.CATEGORY_UPDATED, updatedCategory);
 
     return updatedCategory;
   }
@@ -146,7 +147,7 @@ export class CategoryService {
 
     const deleteCategory = await this.shopCategoryRepository.remove(category);
 
-    this.socketGateway.emitCategoryDeleted(deleteCategory);
+    this.socketGateway.emit(SocketEvent.CATEGORY_DELETED, deleteCategory);
 
     return deleteCategory;
   }

@@ -12,7 +12,7 @@ import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { Shop } from './entities/shop.entity';
 import { ShopCategories } from './category/entities/category.entity';
-import { ShopCategory } from 'src/enums';
+import { ShopCategory, SocketEvent } from 'src/enums';
 import { PaginationDto } from '../common/dtos/paginations.dto';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { FilterDto } from '../common/dtos/filters.dto';
@@ -30,7 +30,7 @@ export class ShopService {
 
   async create(createShopDto: CreateShopDto, user: User) {
     const { name, address, country, category } = createShopDto;
-    const trimmedName = name.trim(); 
+    const trimmedName = name.trim();
 
     let enumCategory: ShopCategory | null = null;
     let customCategory: ShopCategories | null = null;
@@ -69,7 +69,7 @@ export class ShopService {
 
     const createShop = await this.shopRepository.save(shop);
 
-    this.socketGateway.emitShopCreated(createShop);
+    this.socketGateway.emit(SocketEvent.SHOP_CREATED, shop);
 
     return createShop;
   }
@@ -175,7 +175,7 @@ export class ShopService {
     }
     const updatedShop = await this.shopRepository.save(shop);
 
-    this.socketGateway.emitShopUpdated(updatedShop);
+    this.socketGateway.emit(SocketEvent.SHOP_UPDATED, updatedShop);
 
     return updatedShop;
   }
@@ -185,7 +185,7 @@ export class ShopService {
 
     const deletedShop = await this.shopRepository.remove(shop);
 
-    this.socketGateway.emitShopDeleted(deletedShop);
+    this.socketGateway.emit(SocketEvent.SHOP_DELETED, deletedShop);
 
     return deletedShop;
   }

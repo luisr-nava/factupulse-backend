@@ -12,6 +12,8 @@ import { User } from 'src/auth/entities/user.entity';
 import { Shop } from 'src/shop/entities/shop.entity';
 import { FilterDto } from 'src/common/dtos/filters.dto';
 import { PaginationDto } from 'src/common/dtos/paginations.dto';
+import { SocketEvent } from 'src/enums';
+import { SocketGateway } from 'src/socket/socket.gateway';
 
 @Injectable()
 export class CategoryService {
@@ -20,6 +22,8 @@ export class CategoryService {
     private readonly categoryRepository: Repository<ProductCategory>,
     @InjectRepository(Shop)
     private readonly shopRepository: Repository<Shop>,
+
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto, user: User) {
@@ -71,6 +75,11 @@ export class CategoryService {
 
     const savedCategory = await this.categoryRepository.save(category);
 
+    this.socketGateway.emit(
+      SocketEvent.CATEGORY_PRODUCT_CREATED,
+      savedCategory,
+    );
+    
     return {
       id: savedCategory.id,
       name: savedCategory.name,
@@ -248,24 +257,34 @@ export class CategoryService {
       changes,
     });
 
-    const updated = await this.categoryRepository.save(category);
+    const updatedcategory = await this.categoryRepository.save(category);
+
+    this.socketGateway.emit(
+      SocketEvent.CATEGORY_PRODUCT_UPDATED,
+      updatedcategory,
+    );
 
     return {
-      id: updated.id,
-      name: updated.name,
-      shops: updated.shops.map((s) => ({ id: s.id, name: s.name })),
+      id: updatedcategory.id,
+      name: updatedcategory.name,
+      shops: updatedcategory.shops.map((s) => ({ id: s.id, name: s.name })),
       createdBy: {
-        id: updated.createdBy.id,
-        name: updated.createdBy.name,
+        id: updatedcategory.createdBy.id,
+        name: updatedcategory.createdBy.name,
       },
-      modificationHistory: updated.modificationHistory,
+      modificationHistory: updatedcategory.modificationHistory,
     };
   }
 
   async remove(id: string, user: User) {
     await this.findOne(id, user);
 
-    await this.categoryRepository.delete(id);
+    const deleteCategory = await this.categoryRepository.delete(id);
+
+    this.socketGateway.emit(
+      SocketEvent.CATEGORY_PRODUCT_DELETED,
+      deleteCategory,
+    );
 
     return {
       statusCode: 200,
