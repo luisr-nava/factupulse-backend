@@ -7,7 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Shop } from '../../shop/entities/shop.entity';
-import { User } from '../../auth/entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 export enum EmployeeRole {
   MANAGER = 'ENCARGADO',

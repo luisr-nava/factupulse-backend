@@ -1,35 +1,40 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Put,
-  Param,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
-import { UpdateUserDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.authService.create(createUserDto);
-  }
-
   @Post('login')
+  @HttpCode(200)
   login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
   }
 
-  @Put(':id')
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto,
+  @Post('verification-account')
+  @HttpCode(200)
+  verificationAccount(@Body('code') code: string) {
+    return this.authService.verificationAccount(code);
+  }
+
+  @Post('recovery-password')
+  forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('verify-recovery-code')
+  @HttpCode(200)
+  verifyRecoveryCode(@Body('code') code: string) {
+    return this.authService.verifyRecoveryCode(code);
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  resetPassword(
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
   ) {
-    return this.authService.update(id, updateUserDto);
+    return this.authService.resetPassword(token, newPassword);
   }
 }

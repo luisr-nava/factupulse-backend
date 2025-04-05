@@ -10,8 +10,10 @@ import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'src/interfaces';
-import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
-import { User } from './entities/user.entity';
+import { LoginUserDto } from './dto';
+import { User } from 'src/users/entities/user.entity';
+import { codeVerification } from 'src/utils/code-verification';
+import { MailerService } from 'src/mailer/mailer.service';
 
 @Injectable()
 export class AuthService {
@@ -19,39 +21,24 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) {}
-
-  async create(createUserDto: CreateUserDto) {
-    const { password, ...userData } = createUserDto;
-    const user = this.userRepository.create({
-      ...userData,
-      password: bcrypt.hashSync(password, 10),
-    });
-
-    const userExist = await this.userRepository.findOneBy({
-      email: user.email,
-    });
-
-    if (userExist) {
-      throw new ConflictException(
-        `El usuario con el email ${user.email} ya esta registrado`,
-      );
-    }
-
-    await this.userRepository.save(user);
-
-    return {
-      ...user,
-      token: this.getJwtToken({ id: user.id }),
-    };
-  }
 
   async login(loginUserDto: LoginUserDto) {
     const { password, email } = loginUserDto;
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true, id: true, isActive: true },
+      select: {
+        email: true,
+        password: true,
+        id: true,
+        isActive: true,
+        mustChangePassword: true,
+        roles: true,
+        name: true,
+        profileImageUrl: true,
+      },
     });
 
     if (!user)
@@ -67,43 +54,94 @@ export class AuthService {
     if (!user.isActive)
       throw new ForbiddenException(`Aun no has confirmado tu cuenta`);
 
-    return { ...user, token: this.getJwtToken({ id: user.id }) };
+    if (user.mustChangePassword)
+      throw new ForbiddenException(
+        'Debés cambiar tu contraseña antes de acceder a la plataforma.',
+      );
+
+    const token = this.getJwtToken({ id: user.id });
+
+    return {
+      id: user.id,
+      email: user.email,
+      isActive: user.isActive,
+      roles: user.roles,
+      name: user.name,
+      profileImageUrl: user.profileImageUrl,
+      token,
+    };
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOne({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
-    }
-
-    const userExist = await this.userRepository.findOneBy({
-      email: updateUserDto.email,
+  async verificationAccount(code: string) {
+    const user = await this.userRepository.findOneBy({
+      codeVerification: code,
     });
 
-    if (userExist) {
-      throw new ConflictException(
-        `El email ${updateUserDto.email} ya esta registrado`,
+    if (!user) throw new NotFoundException('El código es incorrecto');
+
+    user.isActive = true;
+    user.codeVerification = null;
+    await this.userRepository.save(user);
+
+    return { message: 'Cuenta verificada con éxito' };
+  }
+
+  async verifyRecoveryCode(code: string) {
+    const user = await this.userRepository.findOne({
+      where: { codeVerification: code },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        'El código de verificación es incorrecto o ha expirado',
       );
     }
+    return { message: 'Código verificado correctamente' };
+  }
 
-    const isMatch = await bcrypt.compare(
-      updateUserDto.currentPassword,
-      user.password,
+  async forgotPassword(email: string) {
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user)
+      throw new NotFoundException(
+        `No hay un usuario registrado con el correo ${email}`,
+      );
+
+    const token = this.jwtService.sign(
+      { id: user.id, email: user.email },
+      { expiresIn: '15m' },
     );
-    if (!isMatch) {
-      throw new ForbiddenException('La contraseña actual es incorrecta');
+
+    user.codeVerification = codeVerification();
+    await this.userRepository.save(user);
+
+    await this.mailerService.sendResetPasswordEmail(email, user.name, token);
+    return {
+      message: `Se ha enviado un código de verificación a ${email}`,
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    let payload: JwtPayload;
+
+    try {
+      payload = this.jwtService.verify(token);
+    } catch (error) {
+      throw new UnauthorizedException('El token es inválido o ha expirado');
     }
 
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    const user = await this.userRepository.findOne({
+      where: { id: payload.id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('No se puede restablecer la contraseña.');
     }
 
-    const { currentPassword, ...updateData } = updateUserDto;
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.codeVerification = null;
+    await this.userRepository.save(user);
 
-    await this.userRepository.update(id, updateData);
-
-    return this.userRepository.findOne({ where: { id } });
+    return { message: 'Contraseña restablecida con éxito' };
   }
 
   private getJwtToken(payload: JwtPayload) {

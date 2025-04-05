@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { User } from 'src/auth/entities/user.entity';
 import { PaginationDto } from '../common/dtos/paginations.dto';
 import { FilterDto } from '../common/dtos/filters.dto';
 import { ProductShop } from './product-shop/entities/product-shop.entity';
@@ -17,6 +16,7 @@ import { Product } from './entities/product.entity';
 import { buildDateRangeFilter } from 'src/utils/date-filters';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { SocketEvent } from 'src/enums';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ProductsService {

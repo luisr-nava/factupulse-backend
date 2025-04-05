@@ -1,6 +1,6 @@
-import { User } from 'src/auth/entities/user.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { Shop } from 'src/shop/entities/shop.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   Entity,
@@ -39,7 +39,6 @@ export class ProductCategory {
     updatedAt: string;
     changes: Record<string, { before: any; after: any }>;
   }[];
-  
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

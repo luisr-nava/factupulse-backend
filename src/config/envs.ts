@@ -10,6 +10,8 @@ interface EnvVars {
   DB_NAME: string;
   DB_USER: string;
   JWT_SECRET: string;
+  SMTP_USER: string;
+  SMTP_PASS: string;
 }
 const logger = new Logger('FactuPulse - ERROR');
 
@@ -22,6 +24,8 @@ const envSchema = joi
     DB_NAME: joi.string().required(),
     DB_USER: joi.string().required(),
     JWT_SECRET: joi.string().required(),
+    SMTP_USER: joi.string().required(),
+    SMTP_PASS: joi.string().required(),
   })
   .unknown(true);
 
@@ -44,4 +48,6 @@ export const envs = {
   dbName: envVars.DB_NAME,
   dbUsername: envVars.DB_USER,
   jwtSecret: envVars.JWT_SECRET,
+  smtpUser: envVars.SMTP_USER,
+  smtpPass: envVars.SMTP_PASS,
 };

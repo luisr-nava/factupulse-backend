@@ -15,7 +15,6 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Auth, GetUser } from 'src/auth/decorators';
-import { User } from 'src/auth/entities/user.entity';
 import { UserRole } from 'src/enums';
 import { CurrentUserService } from 'src/common/current-user/current-user.service';
 import { BaseController } from 'src/common/base/base.controller';

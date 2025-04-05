@@ -4,9 +4,10 @@ import {
   Column,
   OneToMany,
   BeforeInsert,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Shop } from '../../shop/entities/shop.entity';
-import { UserRole } from 'src/enums';
 import { ShopCategories } from 'src/shop/category/entities/category.entity';
 import { Exclude } from 'class-transformer';
 
@@ -20,26 +21,24 @@ export class User {
 
   @Column()
   name: string;
-  
+
   @Exclude()
   @Column()
   password: string;
+
+  @Column({ nullable: true })
+  codeVerification: string;
 
   @Column('text', {
     array: true,
     default: ['OWNER'],
   })
   roles: string[];
-  // @Column({
-  //   type: 'enum',
-  //   enum: UserRole,
-  //   default: UserRole.OWNER,
-  // })
-  // role: UserRole;
 
-  @Column({ default: false })
+  @Column({ default: false, nullable: true })
   isActive: boolean;
 
+  // Relación solo para OWNER
   @OneToMany(() => Shop, (shop) => shop.owner)
   shops?: Shop[];
 
@@ -47,6 +46,44 @@ export class User {
     cascade: true,
   })
   categories: ShopCategories[];
+
+  // Campos para empleados
+  @Column('uuid', { array: true, nullable: true })
+  shopId?: string[];
+
+  @Column({ nullable: true })
+  dni?: string;
+
+  @Column({ nullable: true })
+  phone?: string;
+
+  @Column({ nullable: true })
+  address?: string;
+
+  @Column({ default: new Date(), nullable: true })
+  hireDate?: string;
+
+  @Column('decimal', { nullable: true })
+  salary?: number;
+
+  @Column({ nullable: true })
+  notes?: string;
+
+  @Column({ nullable: true })
+  profileImageUrl?: string;
+
+  @Column({ nullable: true })
+  emergencyContact?: string;
+
+  @Column({ nullable: true })
+  createdBy: string;
+
+  @ManyToMany(() => Shop, (shop) => shop.employees)
+  @JoinTable()
+  employeeShops: Shop[];
+
+  @Column({ default: false })
+  mustChangePassword: boolean;
 
   @BeforeInsert()
   checkFieldsBeforeInsert() {

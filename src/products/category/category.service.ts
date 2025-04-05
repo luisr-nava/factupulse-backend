@@ -8,12 +8,12 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ProductCategory } from './entities/category.entity';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/auth/entities/user.entity';
 import { Shop } from 'src/shop/entities/shop.entity';
 import { FilterDto } from 'src/common/dtos/filters.dto';
 import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { SocketEvent } from 'src/enums';
 import { SocketGateway } from 'src/socket/socket.gateway';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class CategoryService {

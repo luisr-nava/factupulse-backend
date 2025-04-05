@@ -9,7 +9,6 @@ import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { User } from 'src/auth/entities/user.entity';
 import { Shop } from './entities/shop.entity';
 import { ShopCategories } from './category/entities/category.entity';
 import { ShopCategory, SocketEvent } from 'src/enums';
@@ -17,6 +16,7 @@ import { PaginationDto } from '../common/dtos/paginations.dto';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { FilterDto } from '../common/dtos/filters.dto';
 import { buildDateRangeFilter } from 'src/utils/date-filters';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ShopService {

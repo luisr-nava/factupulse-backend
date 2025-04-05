@@ -1,14 +1,12 @@
 import {
   IsEmail,
-  IsEnum,
   IsString,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { UserRole } from 'src/enums';
 
-export class CreateUserDto {
+export class CreateOwnerDto {
   @IsString({ message: 'El email debe ser un texto válido' })
   @IsEmail({}, { message: 'Por favor, ingrese un correo electrónico válido' })
   email: string;

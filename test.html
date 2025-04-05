@@ -58,5 +58,33 @@
         renderEvent('category.deleted', data);
       });
     </script>
+<div style="background-color: #fff3f6; padding: 30px; font-family: Arial, sans-serif; color: #333;">
+      <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://res.cloudinary.com/dszkopurc/image/upload/v1743191298/FactuPulse/property/mbmmvmzdkjllk5eqciuh.webp" alt="FactuPulse Logo" style="width: 100px; height: auto;" />
+        </div>
+
+        <h2 style="text-align: center; color: #333;">Recuperar contraseña</h2>
+
+        <p>Hola <strong>${name}</strong>,</p>
+
+        <p>Recibimos una solicitud para restablecer tu contraseña. Hacé clic en el botón de abajo para continuar:</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetLink}" style="background-color: #ff99b2; color: white; text-decoration: none; padding: 12px 24px; border-radius: 5px; font-weight: bold;">
+            Cambiar contraseña
+          </a>
+        </div>
+
+        <p>Si no solicitaste este cambio, podés ignorar este mensaje.</p>
+
+        <hr style="border: none; border-top: 1px solid #eee;" />
+
+        <p style="font-size: 12px; text-align: center; color: #aaa;">
+          © ${new Date().getFullYear()} FactuPulse. Todos los derechos reservados.
+        </p>
+      </div>
+    </div>
   </body>
 </html>

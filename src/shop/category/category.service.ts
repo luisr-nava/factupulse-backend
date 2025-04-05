@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { User } from 'src/auth/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ShopCategories } from './entities/category.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
@@ -14,6 +13,7 @@ import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { FilterDto } from 'src/common/dtos/filters.dto';
 import { buildDateRangeFilter } from 'src/utils/date-filters';
 import { SocketEvent } from '../../enums/socket-event.enum';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class CategoryService {

@@ -12,11 +12,11 @@ import {
 import { ShopService } from './shop.service';
 import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
-import { Auth, GetRawHeaders, GetUser } from 'src/auth/decorators';
+import { Auth, GetUser } from 'src/auth/decorators';
 import { UserRole } from 'src/enums';
-import { User } from 'src/auth/entities/user.entity';
 import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { FilterDto } from 'src/common/dtos/filters.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('shop')
 export class ShopController {

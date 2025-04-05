@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class FilterDto {
   @IsOptional()
@@ -17,4 +17,8 @@ export class FilterDto {
   @IsOptional()
   @IsUUID()
   shopId?: string;
+
+  @IsOptional()
+  @IsIn(['EMPLOYEE', 'MANAGER'])
+  role?: 'EMPLOYEE' | 'MANAGER';
 }

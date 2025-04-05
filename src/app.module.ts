@@ -12,6 +12,8 @@ import { CurrentUserService } from './common/current-user/current-user.service';
 import { CurrentUserInterceptor } from './common/interceptors/current-user.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CommonModule } from './common/common.module';
+import { UsersModule } from './users/users.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { CommonModule } from './common/common.module';
     SocketModule,
     ProductsModule,
     CommonModule,
+    UsersModule,
+    MailerModule,
   ],
   providers: [
     SocketGateway,

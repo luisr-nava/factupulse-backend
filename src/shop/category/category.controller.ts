@@ -17,7 +17,6 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { UserRole } from 'src/enums';
 import { ShopService } from '../shop.service';
-import { User } from 'src/auth/entities/user.entity';
 import { FilterDto } from 'src/common/dtos/filters.dto';
 import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { CurrentUserService } from 'src/common/current-user/current-user.service';
