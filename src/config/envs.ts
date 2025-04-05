@@ -12,6 +12,9 @@ interface EnvVars {
   JWT_SECRET: string;
   SMTP_USER: string;
   SMTP_PASS: string;
+  CLOUDINART_NAME: string;
+  CLOUDINART_API_KEY: string;
+  CLOUDINART_API_SECRET: string;
 }
 const logger = new Logger('FactuPulse - ERROR');
 
@@ -26,6 +29,9 @@ const envSchema = joi
     JWT_SECRET: joi.string().required(),
     SMTP_USER: joi.string().required(),
     SMTP_PASS: joi.string().required(),
+    CLOUDINART_NAME: joi.string().required(),
+    CLOUDINART_API_KEY: joi.string().required(),
+    CLOUDINART_API_SECRET: joi.string().required(),
   })
   .unknown(true);
 
@@ -50,4 +56,7 @@ export const envs = {
   jwtSecret: envVars.JWT_SECRET,
   smtpUser: envVars.SMTP_USER,
   smtpPass: envVars.SMTP_PASS,
+  cloudinaryName: envVars.CLOUDINART_NAME,
+  cloudinaryApiKey: envVars.CLOUDINART_API_KEY,
+  cloudinaryApiSecret: envVars.CLOUDINART_API_SECRET,
 };

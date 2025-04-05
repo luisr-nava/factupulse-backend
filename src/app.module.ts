@@ -14,6 +14,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
 import { MailerModule } from './mailer/mailer.module';
+import { UploadImageModule } from './upload-image/upload-image.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MailerModule } from './mailer/mailer.module';
     CommonModule,
     UsersModule,
     MailerModule,
+    UploadImageModule,
   ],
   providers: [
     SocketGateway,
