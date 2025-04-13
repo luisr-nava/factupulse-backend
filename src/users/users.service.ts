@@ -43,9 +43,9 @@ export class UsersService {
     });
 
     if (userExist) {
-      throw new ConflictException(
-        `El usuario con el email ${user.email} ya esta registrado`,
-      );
+      let errors: string[] = [];
+      errors.push(`El usuario con el email ${user.email} ya esta registrado`);
+      throw new ConflictException(errors);
     }
 
     const code = codeVerification();

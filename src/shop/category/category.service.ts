@@ -61,53 +61,57 @@ export class CategoryService {
     filterDto: FilterDto,
     user: User,
   ) {
-    const { limit = 10, page = 0 } = paginationDto;
+    const { limit = 100, page = 0 } = paginationDto;
     const { search, dateFrom, dateTo } = filterDto;
 
-    const where: FindOptionsWhere<ShopCategories> = { owner: { id: user.id } };
-    const createdAtFilter = buildDateRangeFilter(dateFrom, dateTo);
-    if (createdAtFilter) {
-      where.createdAt = createdAtFilter;
-    }
+    const query = this.shopCategoryRepository
+      .createQueryBuilder('category')
+      .leftJoinAndSelect('category.owner', 'owner')
+      .where('owner.id = :userId', { userId: user.id })
+      .orWhere('category.owner IS NULL');
 
     if (search) {
-      where.name = ILike(`%${search}%`);
+      query.andWhere('category.name ILIKE :search', {
+        search: `%${search}%`,
+      });
     }
 
-    const [customCategories, totalCustom] =
-      await this.shopCategoryRepository.findAndCount({
-        take: limit,
-        skip: page,
-        where,
-      });
+    if (dateFrom) {
+      query.andWhere(
+        '(category.createdAt >= :dateFrom OR category.owner IS NULL)',
+        {
+          dateFrom,
+        },
+      );
+    }
 
-    const shouldFilterByDate = !!dateFrom || !!dateTo;
+    if (dateTo) {
+      query.andWhere(
+        '(category.createdAt <= :dateTo OR category.owner IS NULL)',
+        {
+          dateTo,
+        },
+      );
+    }
 
-    const defaultCategories = shouldFilterByDate
-      ? []
-      : Object.values(ShopCategories)
-          .filter((value) =>
-            search ? value.toLowerCase().includes(search.toLowerCase()) : true,
-          )
-          .map((value) => ({
-            name: value,
-            isDefault: true,
-          }));
+    const [categories, total] = await query
+      .take(limit)
+      .skip(page)
+      .orderBy('category.name', 'ASC')
+      .getManyAndCount();
 
-    const formattedCustom = customCategories.map((cat) => ({
+    const data = categories.map((cat) => ({
       ...cat,
-      isDefault: false,
+      isDefault: !cat.owner,
     }));
 
-    const allCategories = [...defaultCategories, ...formattedCustom];
-
     return {
-      total: allCategories.length,
+      total,
       limit,
       page,
-      totalPages: Math.ceil(allCategories.length / limit),
+      totalPages: Math.ceil(total / limit),
       currentPage: Math.floor(page / limit) + 1,
-      data: allCategories.slice(page, page + limit),
+      data,
     };
   }
 

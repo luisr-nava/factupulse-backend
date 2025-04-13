@@ -10,7 +10,10 @@ export class ShopCategories {
   @Column()
   name: string;
 
-  @ManyToOne(() => User, (user) => user.categories, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.categories, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   owner: User;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

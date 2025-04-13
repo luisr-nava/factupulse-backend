@@ -29,55 +29,53 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: {
-        email: true,
-        password: true,
-        id: true,
-        isActive: true,
-        mustChangePassword: true,
-        roles: true,
-        name: true,
-        profileImageUrl: true,
-      },
     });
 
-    if (!user)
-      throw new UnauthorizedException(
-        `No hay un usuario registrado con el correo ${email}`,
-      );
+    let errors: string[] = [];
+
+    if (!user) {
+      errors.push(`No hay un usuario registrado con el correo ${email}`);
+      throw new UnauthorizedException(errors);
+    }
 
     const isPaswordValid = bcrypt.compareSync(password, user.password);
 
-    if (!isPaswordValid)
-      throw new UnauthorizedException('El password es incorrecto');
+    if (!isPaswordValid) {
+      errors.push('El password es incorrecto');
+      throw new UnauthorizedException(errors);
+    }
 
-    if (!user.isActive)
-      throw new ForbiddenException(`Aun no has confirmado tu cuenta`);
+    if (!user.isActive) {
+      errors.push('Aun no has confirmado tu cuenta');
+      throw new ForbiddenException(errors);
+    }
 
-    if (user.mustChangePassword)
-      throw new ForbiddenException(
+    if (user.mustChangePassword) {
+      errors.push(
         'Debés cambiar tu contraseña antes de acceder a la plataforma.',
       );
-
+      throw new ForbiddenException(errors);
+    }
     const token = this.getJwtToken({ id: user.id });
 
     return {
-      id: user.id,
-      email: user.email,
-      isActive: user.isActive,
-      roles: user.roles,
-      name: user.name,
-      profileImageUrl: user.profileImageUrl,
+      user,
       token,
     };
   }
 
   async verificationAccount(code: string) {
-    const user = await this.userRepository.findOneBy({
-      codeVerification: code,
+    const user = await this.userRepository.findOne({
+      where: {
+        codeVerification: code,
+      },
     });
+    let errors: string[] = [];
 
-    if (!user) throw new NotFoundException('El código es incorrecto');
+    if (!user) {
+      errors.push('El código es incorrecto');
+      throw new NotFoundException(errors);
+    }
 
     user.isActive = true;
     user.codeVerification = null;
@@ -99,53 +97,90 @@ export class AuthService {
     return { message: 'Código verificado correctamente' };
   }
 
-  async forgotPassword(email: string) {
-    const user = await this.userRepository.findOneBy({ email });
-    if (!user)
-      throw new NotFoundException(
-        `No hay un usuario registrado con el correo ${email}`,
-      );
+  async resendConfirmation(email: string) {
+    const user = await this.userRepository.findOne({
+      where: { email },
+    });
 
-    const token = this.jwtService.sign(
-      { id: user.id, email: user.email },
-      { expiresIn: '15m' },
-    );
-
-    user.codeVerification = codeVerification();
+    if (!user) {
+      let errors: string[] = [];
+      errors.push(`No hay un usuario registrado con el correo ${email}`);
+      throw new NotFoundException(errors);
+    }
+    const code = codeVerification();
+    user.codeVerification = code;
     await this.userRepository.save(user);
 
-    await this.mailerService.sendResetPasswordEmail(email, user.name, token);
+    await this.mailerService.resendVerificationEmail(email, user.name, code);
+
+    return { message: 'Correo reenviado' };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.userRepository.findOneBy({ email });
+
+    let errors: string[] = [];
+
+    if (!user) {
+      errors.push(`No hay un usuario registrado con el correo ${email}`);
+      throw new NotFoundException(errors);
+    }
+
+    const code = codeVerification();
+
+    user.resetPasswordCode = code;
+
+    user.resetPasswordCodeExpires = new Date(Date.now() + 1000 * 60 * 10); // 10 min
+
+    user.resetPasswordCodeUsed = false;
+
+    await this.userRepository.save(user);
+
+    await this.mailerService.sendResetPasswordEmail(email, user.name, code);
     return {
       message: `Se ha enviado un código de verificación a ${email}`,
     };
   }
 
-  async resetPassword(token: string, newPassword: string) {
-    let payload: JwtPayload;
-
-    try {
-      payload = this.jwtService.verify(token);
-    } catch (error) {
-      throw new UnauthorizedException('El token es inválido o ha expirado');
-    }
-
+  async resetPassword(code: string, newPassword: string) {
     const user = await this.userRepository.findOne({
-      where: { id: payload.id },
+      where: { resetPasswordCode: code },
     });
 
+    const errors: string[] = [];
+
     if (!user) {
-      throw new NotFoundException('No se puede restablecer la contraseña.');
+      errors.push('El código ingresado no es válido.');
+      throw new UnauthorizedException(errors);
+    }
+
+    if (user.resetPasswordCodeUsed) {
+      errors.push('Este código ya fue utilizado.');
+      throw new UnauthorizedException(errors);
+    }
+
+    if (user.resetPasswordCodeExpires < new Date()) {
+      errors.push('El código ha expirado.');
+      throw new UnauthorizedException(errors);
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
-    user.codeVerification = null;
+
+    user.resetPasswordCodeUsed = true;
+
+    user.resetPasswordCode = null;
+
+    user.resetPasswordCodeExpires = null;
+
     await this.userRepository.save(user);
 
     return { message: 'Contraseña restablecida con éxito' };
   }
 
   private getJwtToken(payload: JwtPayload) {
-    const token = this.jwtService.sign(payload);
+    const token = this.jwtService.sign(payload, {
+      expiresIn: '4h',
+    });
     return token;
   }
 }

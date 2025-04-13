@@ -78,6 +78,15 @@ export class User {
   @Column({ nullable: true })
   createdBy: string;
 
+  @Column({ nullable: true })
+  resetPasswordCode: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordCodeExpires: Date;
+
+  @Column({ default: false })
+  resetPasswordCodeUsed: boolean;
+
   @ManyToMany(() => Shop, (shop) => shop.employees)
   @JoinTable()
   employeeShops: Shop[];

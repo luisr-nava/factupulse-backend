@@ -23,6 +23,11 @@ export class AuthController {
     return this.authService.forgotPassword(email);
   }
 
+  @Post('resend-confirmation')
+  async resendConfirmation(@Body('email') email: string) {
+    return this.authService.resendConfirmation(email);
+  }
+
   @Post('verify-recovery-code')
   @HttpCode(200)
   verifyRecoveryCode(@Body('code') code: string) {

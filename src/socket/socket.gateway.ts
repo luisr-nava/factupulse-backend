@@ -22,6 +22,4 @@ export class SocketGateway {
   emit<T>(event: SocketEvent, data: T) {
     this.server.emit(event, data);
   }
-
-  // Podés seguir agregando más métodos: updated, deleted, etc.
 }

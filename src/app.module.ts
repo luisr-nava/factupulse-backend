@@ -15,6 +15,7 @@ import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
 import { MailerModule } from './mailer/mailer.module';
 import { UploadImageModule } from './upload-image/upload-image.module';
+import { CategorySeeder } from './database/seeders/category.seeder';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UploadImageModule } from './upload-image/upload-image.module';
     UploadImageModule,
   ],
   providers: [
+    CategorySeeder,
     SocketGateway,
     {
       provide: APP_INTERCEPTOR,
