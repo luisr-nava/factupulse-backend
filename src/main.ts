@@ -6,40 +6,43 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { envs } from './config';
-import { CurrentUserInterceptor } from './common/interceptors/current-user.interceptor';
 import { CategorySeeder } from './database/seeders/category.seeder';
+import { CustomSocketIoAdapter } from './socket/socket.adapter'; // 👈 Importamos tu nuevo Adapter
 
 async function bootstrap() {
   const logger = new Logger('FactuPulse');
 
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'verbose'], // 🔹 Solo errores, oculta logs de NestJS
+    logger: ['error', 'verbose'],
   });
-  const seeder = app.get(CategorySeeder);
-
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-
-  // intercepta que usario esta haciendo la peticion
-  // app.get(CurrentUserInterceptor);
-
-  app.setGlobalPrefix('api');
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      // forbidNonWhitelisted: true,
-    }),
-  );
 
   app.enableCors({
-    origin: 'http://localhost:3001', // <- donde corre tu frontend
-    credentials: true, // <- si estás usando cookies, tokens, etc.
+    origin: 'http://localhost:3001',
+    credentials: true,
+    methods: 'GET,POST',
+    allowedHeaders: '*',
   });
 
-  await seeder.run();
+  app.useWebSocketAdapter(new CustomSocketIoAdapter(app)); // 👈 Usamos el Custom Adapter
 
-  await app.listen(envs.port);
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  logger.verbose(`Server is running on port ${envs.port}`);
+  try {
+    await app.listen(envs.port);
+    logger.verbose(`🚀 Servidor ejecutándose en http://localhost:${envs.port}`);
+
+    const seeder = app.get(CategorySeeder);
+    await seeder.run();
+  } catch (error) {
+    if (error.code === 'EADDRINUSE') {
+      logger.error(`❌ El puerto ${envs.port} ya está en uso!`);
+    } else {
+      logger.error('❌ Error inesperado:', error);
+    }
+    process.exit(1);
+  }
 }
+
 bootstrap();

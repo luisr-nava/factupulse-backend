@@ -29,46 +29,43 @@ export class ShopService {
   ) {}
 
   async create(createShopDto: CreateShopDto, user: User) {
-    const { name, address, country, category } = createShopDto;
+    const { name, address, country, category: categoryId } = createShopDto;
     const trimmedName = name.trim();
+    let errors: string[] = [];
+    // Verificamos que la categoría exista
+    const category = await this.shopCategoryRepository.findOne({
+      where: [{ id: categoryId }, { id: categoryId, owner: { id: user.id } }],
+    });
 
-    let enumCategory: ShopCategory | null = null;
-    let customCategory: ShopCategories | null = null;
+    if (!category) {
+      errors.push(
+        `La categoría con ID ${categoryId} no existe o no está permitida.`,
+      );
 
-    if (Object.values(ShopCategory).includes(category as ShopCategory)) {
-      enumCategory = category as ShopCategory;
-    } else {
-      customCategory = await this.shopCategoryRepository.findOne({
-        where: { name: category, owner: { id: user.id } },
-      });
-
-      if (!customCategory) {
-        throw new NotFoundException(
-          `La categoría ${category} no existe. Crea la categoría antes de usarla.`,
-        );
-      }
+      throw new NotFoundException(errors);
     }
+
+    // Verificamos que no exista otra tienda con el mismo nombre
     const shopName = await this.shopRepository.findOne({
       where: { name: trimmedName, owner: { id: user.id } },
     });
 
     if (shopName) {
-      throw new BadRequestException(
-        `La tienda ${name} ya existe. Por favor, elige otro nombre.`,
-      );
+      errors.push(`La tienda ${name} ya existe. Por favor, elige otro nombre.`);
+      throw new BadRequestException(errors);
     }
 
     const shop = this.shopRepository.create({
       name: trimmedName,
       address,
       country,
-      enumCategory,
-      customCategory,
+      category,
       owner: user,
     });
 
     const createShop = await this.shopRepository.save(shop);
 
+    
     this.socketGateway.emit(SocketEvent.SHOP_CREATED, shop);
 
     return createShop;
@@ -142,36 +139,24 @@ export class ShopService {
           `Ya tienes una tienda con el nombre ${trimmedName}.`,
         );
       }
+      shop.name = trimmedName;
     }
 
-    Object.assign(shop, updateShopDto);
-
     if (updateShopDto.category) {
-      let enumCategory: ShopCategory | null = null;
-      let customCategory: ShopCategories | null = null;
+      const category = await this.shopCategoryRepository.findOne({
+        where: [
+          { id: updateShopDto.category },
+          { id: updateShopDto.category, owner: { id: user.id } },
+        ],
+      });
 
-      if (
-        Object.values(ShopCategory).includes(
-          updateShopDto.category as ShopCategory,
-        )
-      ) {
-        enumCategory = updateShopDto.category as ShopCategory;
-        shop.enumCategory = enumCategory;
-        shop.customCategory = null;
-      } else {
-        customCategory = await this.shopCategoryRepository.findOne({
-          where: { name: updateShopDto.category, owner: { id: user.id } },
-        });
-
-        if (!customCategory) {
-          throw new NotFoundException(
-            `La categoría ${updateShopDto.category} no existe. Crea la categoría antes de usarla.`,
-          );
-        }
-
-        shop.customCategory = customCategory;
-        shop.enumCategory = null;
+      if (!category) {
+        throw new NotFoundException(
+          `La categoría con ID ${updateShopDto.category} no existe o no está permitida.`,
+        );
       }
+
+      shop.category = category;
     }
     const updatedShop = await this.shopRepository.save(shop);
 

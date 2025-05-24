@@ -1,25 +1,37 @@
-import { Injectable } from '@nestjs/common';
 import {
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { SocketEvent } from 'src/enums';
-import { ShopCategories } from 'src/shop/category/entities/category.entity';
-import { Shop } from 'src/shop/entities/shop.entity';
+import { Server, Socket } from 'socket.io';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: 'http://localhost:3001',
+    methods: ['GET', 'POST'],
+    credentials: true,
   },
+  // transports: ['websocket'],
+  namespace: '/',
+  pingTimeout: 60000, // 👈 AQUI
+  pingInterval: 25000, // 👈 AQUI
 })
-export class SocketGateway {
+export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server: Server; // 👈 Usamos WebSocketServer normal
 
-  emit<T>(event: SocketEvent, data: T) {
+  handleConnection(client: Socket) {
+    console.log('🔥 Cliente conectado:', client.id);
+  }
+
+  handleDisconnect(client: Socket) {
+    console.log('❌ Cliente desconectado:', client.id);
+  }
+
+  emit<T>(event: string, data: T) {
     this.server.emit(event, data);
   }
 }

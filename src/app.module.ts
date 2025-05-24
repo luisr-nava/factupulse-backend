@@ -26,6 +26,7 @@ import { CategorySeeder } from './database/seeders/category.seeder';
     }),
     AuthModule,
     EmployeeModule,
+    UsersModule,
     ShopModule,
     SocketModule,
     ProductsModule,
@@ -36,7 +37,6 @@ import { CategorySeeder } from './database/seeders/category.seeder';
   ],
   providers: [
     CategorySeeder,
-    SocketGateway,
     {
       provide: APP_INTERCEPTOR,
       useClass: CurrentUserInterceptor, // ✅ Correcto

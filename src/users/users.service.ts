@@ -14,12 +14,13 @@ import { FindOptionsWhere, ILike, In, Raw, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { Shop } from 'src/shop/entities/shop.entity';
-import { UserRole } from 'src/enums';
+import { SocketEvent, UserRole } from 'src/enums';
 import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { FilterDto } from 'src/common/dtos/filters.dto';
 import { buildDateRangeFilter } from 'src/utils/date-filters';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { codeVerification } from '../utils/code-verification';
+import { SocketGateway } from 'src/socket/socket.gateway';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +30,7 @@ export class UsersService {
     @InjectRepository(Shop)
     private readonly shopRepository: Repository<Shop>,
     private readonly mailerService: MailerService,
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   async createOwner(createOwnerDto: CreateOwnerDto) {
@@ -85,7 +87,7 @@ export class UsersService {
     }
 
     const isMatch = await bcrypt.compare(
-      updateOwnerDto.currentPassword,
+      updateOwnerDto.password,
       user.password,
     );
 
@@ -93,7 +95,7 @@ export class UsersService {
       throw new ForbiddenException('La contraseña actual es incorrecta');
     }
 
-    const { currentPassword, password, ...fieldsToUpdate } = updateOwnerDto;
+    const { newPassword, password, ...fieldsToUpdate } = updateOwnerDto;
 
     let hasChanges = false;
 
@@ -209,7 +211,7 @@ export class UsersService {
     });
 
     const saved = await this.userRepository.save(employee);
-
+    this.socketGateway.emit(SocketEvent.EMPLOYEE_CREATED, saved);
     // await this.mailerService.sendEmployeeAccountCreatedEmail(
     //   createEmployeeDto.email,
     //   createEmployeeDto.fullName,
@@ -226,7 +228,7 @@ export class UsersService {
     filterDto: FilterDto,
     user: User,
   ) {
-    const { limit = 10, page = 0 } = paginationDto;
+    const { limit = 10, page = 1 } = paginationDto;
     const { search, dateFrom, dateTo, shopId, role } = filterDto;
 
     let targetShopId: string[] = [];
@@ -301,7 +303,7 @@ export class UsersService {
       where,
       relations: ['employeeShops'],
       take: limit,
-      skip: page * limit,
+      skip: (page - 1) * limit,
     });
 
     return {
@@ -309,7 +311,7 @@ export class UsersService {
       limit,
       page,
       totalPages: Math.ceil(total / limit),
-      currentPage: Math.floor(page / limit) + 1,
+      currentPage: page,
       data: employees.map((employee) => ({
         ...employee,
         employeeShops: employee.employeeShops.map((shop) => ({
@@ -469,12 +471,16 @@ export class UsersService {
       employee.employeeShops = shops;
     }
 
-    await this.userRepository.save(employee);
+    const savedEmployee = await this.userRepository.save(employee);
 
-    return this.userRepository.findOne({
+    const fullEmployee = await this.userRepository.findOne({
       where: { id },
       relations: ['employeeShops'],
     });
+
+    this.socketGateway.emit(SocketEvent.EMPLOYEE_UPDATED, fullEmployee);
+
+    return fullEmployee;
   }
 
   async remove(id: string, user: User) {

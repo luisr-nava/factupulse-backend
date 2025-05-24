@@ -7,6 +7,7 @@ import { User } from './entities/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { CommonModule } from 'src/common/common.module';
 import { ShopModule } from 'src/shop/shop.module';
+import { SocketModule } from 'src/socket/socket.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ShopModule } from 'src/shop/shop.module';
     PassportModule.register({
       defaultStrategy: 'jwt',
     }),
+    SocketModule,
     CommonModule,
     ShopModule,
   ],

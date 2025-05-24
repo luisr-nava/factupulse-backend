@@ -30,17 +30,14 @@ export class Shop {
 
   @ManyToOne(() => User, (user) => user.shops, {
     onDelete: 'SET NULL',
-  }) // Relación con el dueño de la tienda
+  }) 
   owner: User;
 
   @ManyToMany(() => User, (user) => user.employeeShops) // Relación con empleados
   employees: User[];
 
-  @Column({ type: 'enum', enum: ShopCategory, nullable: true })
-  enumCategory: ShopCategory | null; // Categoría predefinida
- 
-  @ManyToOne(() => ShopCategories, { nullable: true })
-  customCategory: ShopCategories | null; // Categoría personalizada
+  @ManyToOne(() => ShopCategories, { eager: true })
+  category: ShopCategories;
 
   @OneToMany(() => ProductShop, (ps) => ps.shop)
   productShops: ProductShop[];

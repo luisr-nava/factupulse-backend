@@ -1,6 +1,15 @@
-import { Controller, Post, Body, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  Get
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
+import { Auth, GetUser } from './decorators';
+import { User } from 'src/users/entities/user.entity';
+import { UserRole } from 'src/enums';
 
 @Controller('auth')
 export class AuthController {
@@ -10,6 +19,13 @@ export class AuthController {
   @HttpCode(200)
   login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
+  }
+
+  @Get('get-user')
+  @Auth(UserRole.OWNER, UserRole.MANAGER, UserRole.EMPLOYEE)
+  getUser(@GetUser() user: User) {
+    const userId = user.id;
+    return this.authService.getUser(userId);
   }
 
   @Post('verification-account')

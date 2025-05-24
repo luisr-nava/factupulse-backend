@@ -64,6 +64,23 @@ export class AuthService {
     };
   }
 
+  async getUser(id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ['shops'],
+    });
+
+    let errors: string[] = [];
+    
+    if (!user) {
+      errors.push('Usuario no encontrado');
+      throw new NotFoundException(errors);
+    }
+    return user;
+  }
+
   async verificationAccount(code: string) {
     const user = await this.userRepository.findOne({
       where: {
@@ -150,17 +167,17 @@ export class AuthService {
     const errors: string[] = [];
 
     if (!user) {
-      errors.push('El código ingresado no es válido.');
+      errors.push("El enlace para restablecer la contraseña ha expirado. Solicitá uno nuevo.");
       throw new UnauthorizedException(errors);
     }
 
     if (user.resetPasswordCodeUsed) {
-      errors.push('Este código ya fue utilizado.');
+      errors.push('Este enlace ya fue utilizado.');
       throw new UnauthorizedException(errors);
     }
 
     if (user.resetPasswordCodeExpires < new Date()) {
-      errors.push('El código ha expirado.');
+      errors.push('El enlace ha expirado. Solicitá uno nuevo.');
       throw new UnauthorizedException(errors);
     }
 
