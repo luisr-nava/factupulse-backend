@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { ProductShopModule } from './product-shop/product-shop.module';
@@ -19,6 +19,7 @@ import { Product } from './entities/product.entity';
     CategoryModule,
     CommonModule,
     ProductShopModule,
+    forwardRef(() => CategoryModule), // ✅ necesario también acá
   ],
   controllers: [ProductsController],
   providers: [ProductsService],

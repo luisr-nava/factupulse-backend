@@ -14,6 +14,7 @@ import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { SocketEvent } from 'src/enums';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { User } from 'src/users/entities/user.entity';
+import { Product } from '../entities/product.entity';
 
 @Injectable()
 export class CategoryService {
@@ -22,6 +23,8 @@ export class CategoryService {
     private readonly categoryRepository: Repository<ProductCategory>,
     @InjectRepository(Shop)
     private readonly shopRepository: Repository<Shop>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
 
     private readonly socketGateway: SocketGateway,
   ) {}
@@ -79,7 +82,7 @@ export class CategoryService {
       SocketEvent.CATEGORY_PRODUCT_CREATED,
       savedCategory,
     );
-    
+
     return {
       id: savedCategory.id,
       name: savedCategory.name,
@@ -277,14 +280,24 @@ export class CategoryService {
   }
 
   async remove(id: string, user: User) {
-    await this.findOne(id, user);
+    const category = await this.findOne(id, user);
 
-    const deleteCategory = await this.categoryRepository.delete(id);
+    const productsUsingCategory = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.categories', 'category')
+      .where('category.id = :id', { id })
+      .getCount();
 
-    this.socketGateway.emit(
-      SocketEvent.CATEGORY_PRODUCT_DELETED,
-      deleteCategory,
-    );
+    if (productsUsingCategory > 0) {
+      throw new ConflictException(
+        `No se puede eliminar la categoría "${category.name}" porque está asignada a ${productsUsingCategory} producto(s).`,
+      );
+    }
+
+    await this.categoryRepository.delete(id);
+
+    this.socketGateway.emit(SocketEvent.CATEGORY_PRODUCT_DELETED, { id });
+
 
     return {
       statusCode: 200,

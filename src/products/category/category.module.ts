@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CategoryController } from './category.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { SocketModule } from 'src/socket/socket.module';
 import { ShopModule } from '../../shop/shop.module';
 import { CommonModule } from 'src/common/common.module';
+import { ProductsModule } from '../products.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CommonModule } from 'src/common/common.module';
     AuthModule,
     SocketModule,
     ShopModule,
+    forwardRef(() => ProductsModule),
     CommonModule,
   ],
   controllers: [CategoryController],

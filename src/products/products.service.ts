@@ -234,10 +234,12 @@ export class ProductsService {
       ...(search && { product: { name: ILike(`%${search}%`) } }),
     }));
 
+    const skip = (page - 1) * limit;
+
     const [productShops, total] = await this.productShopRepository.findAndCount(
       {
+        skip,
         take: limit,
-        skip: page * limit,
         relations: ['product', 'shop'],
         where,
       },
@@ -266,6 +268,7 @@ export class ProductsService {
         minStock: ps.minStock,
         isAvailable: ps.isAvailable,
         modificationHistory: ps.modificationHistory ?? [],
+        category: ps.product.categories[0].name
       })),
     };
   }
