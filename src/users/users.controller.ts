@@ -80,7 +80,7 @@ export class UsersController extends BaseController {
   findOne(@Param('id') id: string) {
     return this.usersService.findOneEmployee(id, this.user);
   }
-  
+
   @Auth(UserRole.OWNER, UserRole.MANAGER)
   @Delete(':id')
   remove(@Param('id') id: string) {

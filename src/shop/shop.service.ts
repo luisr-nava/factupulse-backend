@@ -65,7 +65,6 @@ export class ShopService {
 
     const createShop = await this.shopRepository.save(shop);
 
-    
     this.socketGateway.emit(SocketEvent.SHOP_CREATED, shop);
 
     return createShop;

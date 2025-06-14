@@ -268,7 +268,7 @@ export class ProductsService {
         minStock: ps.minStock,
         isAvailable: ps.isAvailable,
         modificationHistory: ps.modificationHistory ?? [],
-        category: ps.product.categories[0].name
+        category: ps.product.categories[0].name,
       })),
     };
   }

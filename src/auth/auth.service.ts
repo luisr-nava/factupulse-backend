@@ -73,7 +73,7 @@ export class AuthService {
     });
 
     let errors: string[] = [];
-    
+
     if (!user) {
       errors.push('Usuario no encontrado');
       throw new NotFoundException(errors);
@@ -167,7 +167,9 @@ export class AuthService {
     const errors: string[] = [];
 
     if (!user) {
-      errors.push("El enlace para restablecer la contraseña ha expirado. Solicitá uno nuevo.");
+      errors.push(
+        'El enlace para restablecer la contraseña ha expirado. Solicitá uno nuevo.',
+      );
       throw new UnauthorizedException(errors);
     }
 

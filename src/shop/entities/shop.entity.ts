@@ -30,7 +30,7 @@ export class Shop {
 
   @ManyToOne(() => User, (user) => user.shops, {
     onDelete: 'SET NULL',
-  }) 
+  })
   owner: User;
 
   @ManyToMany(() => User, (user) => user.employeeShops) // Relación con empleados

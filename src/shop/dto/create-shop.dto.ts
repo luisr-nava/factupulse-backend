@@ -10,7 +10,7 @@ import { ShopCategory } from 'src/enums';
 export class CreateShopDto {
   @IsString({ message: 'El nombre de la tienda es obligatoria' })
   name: string;
-  
+
   @IsString({ message: 'La direccion de la tienda es obligatoria' })
   address: string;
 

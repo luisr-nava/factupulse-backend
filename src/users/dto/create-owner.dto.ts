@@ -23,7 +23,6 @@ export class CreateOwnerDto {
   @MaxLength(50, {
     message: 'La contraseña debe tener menos de 50 caracteres',
   })
-  
   @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message:
       'La contraseña debe tener una letra mayúscula, minúscula y un número',

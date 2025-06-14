@@ -298,7 +298,6 @@ export class CategoryService {
 
     this.socketGateway.emit(SocketEvent.CATEGORY_PRODUCT_DELETED, { id });
 
-
     return {
       statusCode: 200,
       message: 'Categoría eliminada correctamente',
