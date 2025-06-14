@@ -34,6 +34,12 @@ export class Product {
   @OneToMany(() => ProductShop, (ps) => ps.product)
   productShops: ProductShop[];
 
+  @Column({ unique: true, nullable: true })
+  code?: string;
+
+  @Column({ unique: true, nullable: true })
+  barcode?: string;
+
   @ManyToOne(() => User)
   createdBy: User;
 

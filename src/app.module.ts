@@ -16,6 +16,9 @@ import { UsersModule } from './users/users.module';
 import { MailerModule } from './mailer/mailer.module';
 import { UploadImageModule } from './upload-image/upload-image.module';
 import { CategorySeeder } from './database/seeders/category.seeder';
+import { SalesModule } from './sales/sales.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-ioredis';
 
 @Module({
   imports: [
@@ -23,6 +26,12 @@ import { CategorySeeder } from './database/seeders/category.seeder';
     TypeOrmModule.forRootAsync({
       useFactory: typeOrmConfig,
       inject: [ConfigService],
+    }),
+    CacheModule.register({
+      store: redisStore as any,
+      url: process.env.REDIS_URL,
+      ttl: 60, // segundos
+      isGlobal: true,
     }),
     AuthModule,
     EmployeeModule,
@@ -34,12 +43,13 @@ import { CategorySeeder } from './database/seeders/category.seeder';
     UsersModule,
     MailerModule,
     UploadImageModule,
+    SalesModule,
   ],
   providers: [
     CategorySeeder,
     {
       provide: APP_INTERCEPTOR,
-      useClass: CurrentUserInterceptor, // ✅ Correcto
+      useClass: CurrentUserInterceptor,
     },
   ],
   exports: [],

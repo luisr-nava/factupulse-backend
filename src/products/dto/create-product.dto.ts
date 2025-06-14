@@ -52,6 +52,13 @@ export class CreateProductDto {
   @IsNotEmpty({ message: 'Las categorias son obligatorias' })
   categories: string[];
 
+  @IsString()
+  code: string;
+
+  @IsOptional()
+  @IsString()
+  barcode: string;
+
   @ValidateNested({ each: true })
   @Type(() => ShopProductData)
   shops: ShopProductData[];

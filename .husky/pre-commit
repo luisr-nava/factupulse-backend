@@ -1,0 +1,27 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Detectando archivos staged..."
+STAGED_FILES=$(git diff --name-only --cached)
+
+echo "🧽 Formateando código..."
+npm run format
+
+echo "🏗️ Compilando el proyecto..."
+npm run build
+
+echo "➕ Reagregando archivos formateados..."
+for file in $STAGED_FILES; do
+  if [ -f "$file" ]; then
+    git add "$file"
+  fi
+done
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+if echo "$CURRENT_BRANCH" | grep -q "^feature/"; then
+  echo "📥 Feature branch detectada: $CURRENT_BRANCH"
+  git pull origin develop
+else
+  echo "ℹ️ Rama '$CURRENT_BRANCH' no es una feature, no se hace pull de develop."
+fi
