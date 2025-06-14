@@ -27,12 +27,6 @@ import * as redisStore from 'cache-manager-ioredis';
       useFactory: typeOrmConfig,
       inject: [ConfigService],
     }),
-    CacheModule.register({
-      store: redisStore as any,
-      url: process.env.REDIS_URL,
-      ttl: 60, // segundos
-      isGlobal: true,
-    }),
     AuthModule,
     EmployeeModule,
     UsersModule,
